@@ -7,17 +7,17 @@ class Client {
   /**
    * @constructor
    * 
-   * @param {any} options Options: prefix, self_commands, queue.
+   * @param {any} options Options: prefix, self_commands, queue, queue_max_length, fetchInterval and autosaveInterval.
    */
-  constructor({ prefix = '!', self_commands = true, queue = false } = { prefix: '!', self_commands: true, queue: false }) {
+  constructor({ prefix = '!', self_commands = true, queue = false, queue_max_length = 5, fetchInterval = 100, autosaveInterval = 10000 } = { prefix: '!', self_commands: true, queue: false, queue_max_length: 5, fetchInterval: 100, autosaveInterval: 10000 }) {
     this.commands = new Map();
     this.events = {};
 
-    this.handledMessages = new Array();
+    this.handledMessages = localStorage.getItem('handledMessages') === null ? new Array() : Array.from(JSON.parse(localStorage.getItem('handledMessages')));
 
     setInterval(() => {
       if (getChat() !== null) {
-        const elements = queue ? [].slice.call(getChat().children, -5) : [getChat().lastChild];
+        const elements = queue ? [].slice.call(getChat().children, -queue_max_length) : [getChat().lastChild];
 
         for (const element of elements) {
           if (element.hasAttribute('data-id')) {
@@ -47,7 +47,11 @@ class Client {
           };
         };
       };
-    }, 100);
+    }, fetchInterval);
+
+    setInterval(() => {
+      localStorage.setItem('handledMessages', JSON.stringify(this.handledMessages));
+    }, autosaveInterval);
 
     this.emit('init');
   };
