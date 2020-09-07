@@ -49,7 +49,7 @@ class Client {
       };
     }, fetchInterval);
 
-    setInterval(() => {
+    this.autoSaver = setInterval(() => {
       localStorage.setItem('handledMessages', JSON.stringify(localStorage.getItem('handledMessages') === null ? new Array() : Array.from(JSON.parse(localStorage.getItem('handledMessages'))).slice(-(queue_max_length * 10))));
     }, autosaveInterval);
 
