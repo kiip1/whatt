@@ -37,7 +37,7 @@ class Client {
                       return;
                     };
                   };
-                }
+                };
 
                 this.emit('message', message);
 
@@ -49,8 +49,8 @@ class Client {
       };
     }, fetchInterval);
 
-    this.autoSaver = setInterval(() => {
-      localStorage.setItem('handledMessages', JSON.stringify(this.handledMessages));
+    setInterval(() => {
+      localStorage.setItem('handledMessages', JSON.stringify(localStorage.getItem('handledMessages') === null ? new Array() : Array.from(JSON.parse(localStorage.getItem('handledMessages'))).slice(-(queue_max_length * 10))));
     }, autosaveInterval);
 
     this.emit('init');
@@ -140,7 +140,7 @@ class Client {
   gotoNewestChat() {
     for (const element of getChats().children) {
       if (element.style.transform === 'translateY(0px)') {
-        return element.firstChild.firstChild.lastChild.firstChild.firstChild.firstChild.firstChild.dispatchEvent(new MouseEvent('mousedown', { bubbles: true }));
+        element.firstChild.firstChild.lastChild.firstChild.firstChild.firstChild.firstChild.dispatchEvent(new MouseEvent('mousedown', { bubbles: true }));
       };
     };
   };
@@ -155,22 +155,13 @@ class Client {
   getMessageFromElement(element) {
     if (element.querySelector('[data-pre-plain-text]') === null) return undefined;
   
-    try {
-      const sender = element.querySelector('[data-pre-plain-text]').getAttribute('data-pre-plain-text').match(/\] (.*):/)[1];
-      const content = element.querySelector('[data-pre-plain-text]').lastChild.children[getChat().lastChild.querySelector('[data-pre-plain-text]').lastChild.childElementCount - 2].innerText;
-      const reactionContent = element.querySelector('[data-pre-plain-text]').firstChild.firstChild.firstChild.lastChild.firstChild.lastChild.innerText;
-      const images = Array.from(element.querySelector('[data-pre-plain-text]').querySelectorAll('[src^=data]'));
-      const timestamp = element.querySelector('[data-pre-plain-text]').getAttribute('data-pre-plain-text').match(/\[(.*)\]/)[1];
-  
-      return new Message(sender, new MessageContent(content, reactionContent, images), timestamp);
-    } catch (error) {
-      const sender = element.querySelector('[data-pre-plain-text]').getAttribute('data-pre-plain-text').match(/\] (.*):/)[1];
-      const content = element.querySelector('[data-pre-plain-text]').lastChild.children[getChat().lastChild.querySelector('[data-pre-plain-text]').lastChild.childElementCount - 2].innerText;
-      const images = Array.from(element.querySelector('[data-pre-plain-text]').querySelectorAll('[src^=data]'));
-      const timestamp = element.querySelector('[data-pre-plain-text]').getAttribute('data-pre-plain-text').match(/\[(.*)\]/)[1];
-  
-      return new Message(sender, new MessageContent(content, null, images), timestamp);
-    };
+    const sender = element.querySelector('[data-pre-plain-text]').getAttribute('data-pre-plain-text').match(/\] (.*):/)[1];
+    const content = element.querySelector('[data-pre-plain-text]').lastChild.children[getChat().lastChild.querySelector('[data-pre-plain-text]').lastChild.childElementCount - 2].innerText;
+    const reactionContent = element.querySelector('[data-pre-plain-text]').firstChild.firstChild.firstChild.lastChild.firstChild === null ? null : element.querySelector('[data-pre-plain-text]').firstChild.firstChild.firstChild.lastChild.firstChild.lastChild.innerText;
+    const images = Array.from(element.querySelector('[data-pre-plain-text]').querySelectorAll('[src^=data]'));
+    const timestamp = element.querySelector('[data-pre-plain-text]').getAttribute('data-pre-plain-text').match(/\[(.*)\]/)[1];
+
+    return new Message(sender, new MessageContent(content, reactionContent, images), timestamp);
   };
 
   /**
