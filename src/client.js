@@ -15,7 +15,7 @@ class Client {
 
     this.handledMessages = localStorage.getItem('handledMessages') === null ? new Array() : Array.from(JSON.parse(localStorage.getItem('handledMessages')));
 
-    setInterval(() => {
+    this.messageFetcher = setInterval(() => {
       if (getChat() !== null) {
         const elements = queue ? [].slice.call(getChat().children, -queue_max_length) : [getChat().lastChild];
 
@@ -49,7 +49,7 @@ class Client {
       };
     }, fetchInterval);
 
-    setInterval(() => {
+    this.autoSaver = setInterval(() => {
       localStorage.setItem('handledMessages', JSON.stringify(this.handledMessages));
     }, autosaveInterval);
 
@@ -171,5 +171,13 @@ class Client {
   
       return new Message(sender, new MessageContent(content, null, images), timestamp);
     };
+  };
+
+  /**
+   * Stops all intervals of the client.
+   */
+  stop() {
+    clearInterval(this.messageFetcher);
+    clearInterval(this.autoSaver);
   };
 };
