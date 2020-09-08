@@ -4,6 +4,8 @@
  * Represents the client.
  */
 class Client {
+  ignoreNext = true;
+
   /**
    * @constructor
    * 
@@ -27,21 +29,25 @@ class Client {
               const message = this.getMessageFromElement(element);
 
               if (message !== undefined) {
-                if (self_commands ? true : element.getAttribute('data-id').startsWith('false_')) {
-                  for (const [name, callback] of this.commands.entries()) {
-                    if (message.content.message.startsWith(prefix + name)) {
-                      callback(message, message.content.message.substring(prefix.length + name.length).split(' ').splice(1));
+                if (!this.ignoreNext) {
+                  if (self_commands ? true : element.getAttribute('data-id').startsWith('false_')) {
+                    for (const [name, callback] of this.commands.entries()) {
+                      if (message.content.message.startsWith(prefix + name)) {
+                        callback(message, message.content.message.substring(prefix.length + name.length).split(' ').splice(1));
 
-                      this.emit('command', [name, callback]);
+                        this.emit('command', [name, callback]);
 
-                      return;
+                        return;
+                      };
                     };
                   };
+
+                  this.emit('message', message);
+
+                  this.emit(`message_${element.getAttribute('data-id').startsWith('true_') ? 'self' : 'other'}`, message);
+                } else {
+                  this.ignoreNext = false;
                 };
-
-                this.emit('message', message);
-
-                this.emit(`message_${element.getAttribute('data-id').startsWith('true_') ? 'self' : 'other'}`, message);
               };
             };
           };
@@ -115,6 +121,8 @@ class Client {
    * @param {String} message The message to send.
    */
   sendMessage(message) {
+    this.ignoreNext = true;
+
     const cachedMessage = getTextBox().textContent;
 
     getTextBox().textContent = message;
